@@ -1,0 +1,185 @@
+    <!-- 페이지 헤더 -->
+    <header>
+        <h1>강남대 알리미</h1>
+        <!-- 내비게이션 바 -->
+        <nav>
+            <ul>
+                <li><a href="#home">홈</a></li>
+                <li><a href="#academic-schedule">학사일정</a></li>
+                <li><a href="#department-announcements">학과별 공지사항</a></li>
+                <li><a href="#homepage-linkage">홈페이지 바로가기</a></li>
+                <li><a href="#schedule">오늘의 일정</a></li>
+                <li><a href="#login" id="login-nav-link">로그인/회원가입</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- 메인 콘텐츠 컨테이너 -->
+    <div class="container">
+        <!-- 홈 섹션 -->
+        <section id="home" class="main-content active"> <!-- active 클래스 추가하여 홈 섹션은 기본적으로 보이게 함 -->
+            <h2>홈 섹션</h2>
+            <p>이곳은 홈페이지의 메인 콘텐츠 영역입니다. 여기에 텍스트, 이미지 등을 추가할 수 있습니다.</p>
+            <p>이 템플릿을 필요에 맞게 자유롭게 사용자 지정하세요!</p>
+
+            <!-- New: User Profile Section on Home page -->
+            <div id="user-profile-section" style="margin-top: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;" class="hidden"> <!-- Initially hidden -->
+                <h3>내 프로필</h3>
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <img id="profile-picture" src="https://via.placeholder.com/100" alt="프로필 사진" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-right: 20px;">
+                    <div>
+                        <p><strong>이름:</strong> <span id="profile-name-display">미정</span></p>
+                        <p><strong>학번:</strong> <span id="profile-student-id-display">미정</span></p>
+                        <p><strong>학과:</strong> <span id="profile-department-display">미정</span></p>
+                    </div>
+                </div>
+                <button id="edit-profile-button" class="button" style="margin-top: 0;">프로필 수정</button>
+                <div id="profile-edit-form" style="display: none; margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #fff;">
+                    <h4>프로필 수정</h4>
+                    <label for="edit-name">이름:</label><br>
+                    <input type="text" id="edit-name" placeholder="이름을 입력하세요"><br>
+                    <label for="edit-student-id">학번:</label><br>
+                    <input type="text" id="edit-student-id" placeholder="학번을 입력하세요"><br>
+                    <label for="edit-department">학과:</label><br>
+                    <input type="text" id="edit-department" placeholder="학과를 입력하세요"><br>
+                    <label for="edit-photo-upload">프로필 사진:</label><br>
+                    <input type="file" id="edit-photo-upload" accept="image/*"><br>
+                    <button id="save-profile-button" class="button" style="margin-top: 10px;">저장</button>
+                    <button id="cancel-profile-button" class="button" style="margin-top: 10px; background-color: #9e9e9e;">취소</button>
+                </div>
+            </div>
+
+            <!-- New: Latest Announcements snippet on Home page -->
+            <div id="home-announcements-snippet" style="margin-top: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;" class="hidden">
+                <h3><a href="https://web.kangnam.ac.kr/menu/f19069e6134f8f8aa7f689a4a675e66f.do?searchMenuSeq=0" style="text-decoration: none; color: #2196f3;" target="_blank">최신 공지사항</a></h3>
+                <p>새로운 서비스 출시, 시스템 점검 등 중요한 소식을 확인하세요!</p>
+                <a href="https://web.kangnam.ac.kr/menu/f19069e6134f8f8aa7f689a4a675e66f.do?searchMenuSeq=0" class="button" target="_blank" style="padding: 5px 10px; font-size: 0.9em; margin-top: 10px;">전체 공지사항 보기</a>
+            </div>
+
+            <!-- New: Latest Schedules snippet on Home page -->
+            <div id="home-schedules-snippet" style="margin-top: 30px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 5px; background-color: #f9f9f9;" class="hidden">
+                <h3><a href="#schedule" style="text-decoration: none; color: #1976d2;">최신 일정</a></h3>
+                <ul id="latest-schedules" style="list-style-type: none; padding: 0;"></ul>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #777;"></p>
+                <a href="#schedule" class="button" style="padding: 5px 10px; font-size: 0.9em; margin-top: 10px;">전체 일정 보기</a>
+            </div>
+
+        </section>
+
+        <!-- 학사일정 섹션 -->
+        <section id="academic-schedule" class="main-content">
+            <h2>학사일정</h2>
+            <p>강남대학교의 최신 학사일정을 확인하세요.</p>
+            <ul>
+                <li>2024년 1학기 개강: 3월 4일</li>
+                <li>중간고사 기간: 4월 22일 ~ 4월 26일</li>
+                <li>기말고사 기간: 6월 17일 ~ 6월 21일</li>
+            </ul>
+        </section>
+
+        <!-- 학과별 공지사항 섹션 -->
+        <section id="department-announcements" class="main-content">
+            <h2>학과별 공지사항</h2>
+            <p>자신의 학과를 선택하고 해당 학과의 공지사항을 확인하세요.</p>
+            <form id="department-selection-form">
+                <label for="department-select">학과 선택:</label><br>
+                <select id="department-select" name="department-select" style="width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">학과를 선택해주세요</option>
+                    <option value="gyoyuk">교육학과</option>
+                    <option value="gukje">국제지역학과</option>
+                    <option value="gidokgyo">기독교커뮤니케이션학과</option>
+                    <option value="design">디자인학과</option>
+                    <option value="munhwa">문화콘텐츠학과</option>
+                    <option value="beophaengjeong">법행정세무학부</option>
+                    <option value="budongsan">부동산건설학부</option>
+                    <option value="sahoe">사회복지학부</option>
+                    <option value="sanggyeong">상경학부</option>
+                    <option value="senior">시니어비즈니스학과</option>
+                    <option value="yua">유아교육과</option>
+                    <option value="eumak">음악학과</option>
+                    <option value="aifusion">인공지능융합공학부</option>
+                    <option value="jayu">자유전공학부</option>
+                    <option value="jeonja">전자반도체공학부</option>
+                    <option value="jungguk">중국콘텐츠비즈니스학과</option>
+                    <option value="jungdeung">중등특수교육과</option>
+                    <option value="cheyuk">체육학과</option>
+                    <option value="chodeung">초등특수교육과</option>
+                    <option value="computer">컴퓨터공학부</option>
+                    <option value="hangugeo">한국어문학과</option>
+                </select><br>
+                <button type="submit" class="button" style="margin-top: 10px;">학과 선택 저장</button>
+            </form>
+            <div style="margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #f0f0f0; border-radius: 5px;">
+                <h3>선택된 학과 공지사항:</h3>
+                <p id="selected-department-info" style="font-size: 1.1em; font-weight: bold;">선택된 학과가 없습니다.</p>
+                <a id="department-announcement-link" href="#" target="_blank" class="button" style="display: none; margin-top: 10px;">공지사항 바로가기</a>
+            </div>
+        </section>
+
+        <!-- 홈페이지 바로가기 섹션 -->
+        <section id="homepage-linkage" class="main-content">
+            <h2>홈페이지 바로가기</h2>
+            <p>강남대학교 공식 홈페이지로 이동합니다.</p>
+            <a href="https://www.kangnam.ac.kr/" class="button" target="_blank">강남대학교 홈페이지 바로가기</a>
+        </section>
+
+        <!-- 오늘 일정 섹션 -->
+        <section id="schedule" class="main-content">
+            <h2>오늘 일정</h2>
+            <p>날짜와 내용을 입력하여 일정을 추가하고 관리할 수 있습니다.</p>
+            <form id="schedule-input-form" class="hidden">
+                <label for="schedule-date">날짜:</label><br>
+                <input type="date" id="schedule-date" name="schedule-date" required><br><br>
+                <label for="schedule-content">내용:</label><br>
+                <input type="text" id="schedule-content" name="schedule-content" required placeholder="일정 내용을 입력하세요..."><br><br>
+                <button type="submit">일정 추가</button>
+            </form>
+            <div id="schedule-display-area" style="margin-top: 20px; padding: 15px; border: 1px dashed #ccc; background-color: #f0f0f0; border-radius: 5px;" class="hidden">
+                <h3>내 일정 목록:</h3>
+                <ul id="schedule-items" style="list-style-type: none; padding: 0;"></ul>
+            </div>
+        </section>
+
+        <!-- 로그인/회원가입 섹션 -->
+        <section id="login" class="main-content">
+            <h2>로그인 및 회원가입</h2>
+            <div id="login-form-container">
+                <h3>로그인</h3>
+                <form id="login-form" action="#" method="POST">
+                    <label for="login_student_id">학번:</label><br>
+                    <input type="text" id="login_student_id" name="login_student_id" required><br><br>
+                    <label for="login_password">비밀번호:</label><br>
+                    <input type="password" id="login_password" name="login_password" required><br>
+                    <span class="forgot-password"><a href="#">비밀번호 찾기</a></span><br>
+                    <button type="submit">로그인</button>
+                </form>
+                <button id="show-register-form-button" class="button" style="margin-top: 10px; background-color: #4CAF50;">회원가입</button>
+            </div>
+
+            <div id="register-form-container" class="hidden">
+                <h3>회원가입</h3>
+                <form id="register-form" action="#" method="POST">
+                    <label for="register_student_id">학번:</label><br>
+                    <input type="text" id="register_student_id" name="register_student_id" required><br><br>
+                    <label for="register_password">비밀번호:</label><br>
+                    <input type="password" id="register_password" name="register_password" required><br><br>
+                    <label for="register_confirm_password">비밀번호 확인:</label><br>
+                    <input type="password" id="register_confirm_password" name="register_confirm_password" required><br><br>
+                    <button type="submit">회원가입</button>
+                </form>
+                <button id="show-login-form-button" class="button" style="margin-top: 10px; background-color: #2196f3;">로그인</button>
+            </div>
+
+            <div id="logout-message-container" class="hidden">
+                <p><span id="logged-in-user-display"></span>님, 환영합니다!</p>
+                <button id="logout-button" class="button">로그아웃</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- 페이지 푸터 -->
+    <footer>
+        <p>&copy;</p>
+    </footer>
+
+    <!--
