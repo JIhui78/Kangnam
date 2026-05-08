@@ -27,7 +27,7 @@
 
             const logoutMessageContainer = document.getElementById('logout-message-container');
             const loggedInUserDisplay = document.getElementById('logged-in-user-display');
-            const logoutButton = document.getElementById('logout_button');
+            const logoutButton = document.getElementById('logout-button');
             const userProfileSection = document.getElementById('user-profile-section');
 
             // New elements for conditional display
@@ -455,6 +455,12 @@
                     if (targetId === '#homepage-linkage') {
                         window.open('https://www.kangnam.ac.kr/', '_blank');
                         return; // Stop further processing
+                    }
+
+                    // New logic: Check login status for all other protected sections
+                    if (!isLoggedIn && targetId !== '#home') {
+                        alert('로그인 후 이용 가능한 서비스입니다.');
+                        return; // Stop further processing for protected sections
                     }
 
                     // For all other navigation links:
