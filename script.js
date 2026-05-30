@@ -1,0 +1,404 @@
+
+        const departments = [
+            "자유전공학부", "사회복지학부", "시니어비즈니스학과", "상경학부", "법행정세무학부", "문화콘텐츠학과",
+            "국제지역학과", "중국콘텐츠비즈니스학과", "기독교커뮤니케이션학과", "한국어문학과", "컴퓨터공학부", "인공지능융합공학부",
+            "전자반도체공학부", "부동산건설학부", "디자인학과", "체육학과", "음악학과", "교육학과",
+            "유아교육과", "초등특수교육과", "중등특수교육과"
+        ];
+        const dayNames = ['일','월','화','수','목','금','토'];
+
+        let currentUser = null; let timerIdx = null; let statsChart = null; let tempImgData = null;
+        let currentWeekOffset = 0; let currentMonthDate = new Date();
+        let currentPostId = null; let currentCommunityCat = 'all';
+        const storage = { get: (k) => JSON.parse(localStorage.getItem(k) || '[]'), set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
+
+        function getLocalYYYYMMDD(date) {
+            const d = date || new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        window.onload = () => {
+            const deptHtml = departments.map(d => `<option value='${d}'>${d}</option>`).join('');
+            document.getElementById('user-dept-signup').innerHTML = deptHtml;
+            document.getElementById('edit-dept').innerHTML = deptHtml;
+        };
+
+        function toggleAuthMode() {
+            const isSignup = document.getElementById('signup-fields').classList.toggle('hidden');
+            document.getElementById('auth-title').innerText = isSignup ? 'KNU 알리미 회원가입' : 'KNU 알리미 로그인';
+            document.getElementById('main-auth-btn').innerText = isSignup ? '가입하기' : '로그인';
+            document.getElementById('auth-toggle-text').innerText = isSignup ? '이미 계정이 있으신가요?' : '회원가입이 필요하신가요?';
+        }
+
+        function handleAuth() {
+            console.log('handleAuth called');
+            const id = document.getElementById('user-id').value; const pw = document.getElementById('user-pw').value;
+            let users = storage.get('knu_users');
+            const isSignup = !document.getElementById('signup-fields').classList.contains('hidden');
+            if(isSignup) {
+                const name = document.getElementById('user-name').value; const dept = document.getElementById('user-dept-signup').value;
+                if(!id || !pw || !name) { console.log('Signup: All fields required'); return alert('모든 정보를 입력해주세요!'); }
+                if(users.find(u => u.id === id)) { console.log('Signup: Already registered ID'); return alert('이미 가입된 학번입니다!'); }
+                users.push({id, pw, name, dept, msg: '열공 중!', img: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'});
+                storage.set('knu_users', users);
+                alert('가입 성공!'); toggleAuthMode();
+                console.log('Signup successful');
+            } else {
+                const user = users.find(u => u.id === id && u.pw === pw);
+                if(user) { currentUser = user; loginSuccess(); console.log('Login successful'); } else { alert('학번 또는 비밀번호가 틀립니다!'); console.log('Login failed: Incorrect credentials'); }
+            }
+        }
+
+        function loginSuccess() {
+            console.log('loginSuccess called');
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            updateProfileUI(); showPage('home');
+            console.log('Main app visibility updated');
+        }
+
+        function updateProfileUI() {
+            document.getElementById('display-name').innerText = currentUser.name + ' (' + currentUser.id + ')';
+            document.getElementById('display-dept').innerText = currentUser.dept;
+            document.getElementById('display-msg').innerText = currentUser.msg;
+            document.getElementById('display-profile-img').src = currentUser.img;
+
+            const deptLinks = {
+                "자유전공학부": "https://dls.kangnam.ac.kr/",
+                "사회복지학부": "https://knusw.kangnam.ac.kr/",
+                "시니어비즈니스학과": "https://senior-industry.kangnam.ac.kr/",
+                "상경학부": "https://globalbiz.kangnam.ac.kr/",
+                "법행정세무학부": "https://pet.kangnam.ac.kr/",
+                "문화콘텐츠학과": "https://kcc.kangnam.ac.kr/",
+                "국제지역학과": "https://kcc.kangnam.ac.kr/",
+                "중국콘텐츠비즈니스학과": "https://kcc.kangnam.ac.kr/",
+                "기독교커뮤니케이션학과": "https://kcc.kangnam.ac.kr/",
+                "한국어문학과": "https://kcc.kangnam.ac.kr/",
+                "컴퓨터공학부": "https://sae.kangnam.ac.kr/",
+                "인공지능융합공학부": "https://ace.kangnam.ac.kr/",
+                "전자반도체공학부": "https://esc.kangnam.ac.kr/",
+                "부동산건설학부": "https://knureal.kangnam.ac.kr/",
+                "디자인학과": "https://design.kangnam.ac.kr/",
+                "체육학과": "https://ksps.kangnam.ac.kr/",
+                "음악학과": "https://musicdpt.kangnam.ac.kr/",
+                "교육학과": "https://educ.kangnam.ac.kr/",
+                "유아교육과": "https://knece.kangnam.ac.kr/",
+                "초등특수교육과": "https://sped.kangnam.ac.kr/",
+                "중등특수교육과": "https://sped.kangnam.ac.kr/"
+            };
+
+            document.getElementById('dept-link').href = deptLinks[currentUser.dept] || '#'; // 해당 학과 링크가 없으면 기본 '#'으로 설정
+        }
+
+        function showPage(p) {
+            ['home','study','schedule','community'].forEach(id => {
+                const el = document.getElementById('page-'+id);
+                if(el) el.classList.add('hidden');
+                const nav = document.getElementById('nav-'+id);
+                if(nav) nav.classList.remove('active');
+            });
+            document.getElementById('page-'+p).classList.remove('hidden');
+            document.getElementById('nav-'+p).classList.add('active');
+            if(p === 'schedule') renderSchedule();
+            if(p === 'study') { updateTimerUI(); renderStudy(); renderStudyCalendar(); renderRanking(); }
+            if(p === 'home') renderHome();
+            if(p === 'community') renderCommunity();
+        }
+
+        function renderHome() {
+            const logs = storage.get('logs_'+currentUser.id); const today = getLocalYYYYMMDD();
+            const todayLog = logs.find(l => l.date === today) || {sec: 0};
+            document.getElementById('home-today-time').innerText = Math.floor(todayLog.sec/3600) + 'h ' + Math.floor((todayLog.sec%3600)/60) + 'm';
+
+            const users = storage.get('knu_users');
+            const rankData = users.map(u => ({ id: u.id, dept: u.dept, sec: (storage.get('logs_'+u.id).find(l => l.date === today)?.sec || 0) })).sort((a,b) => b.sec - a.sec);
+            const totalRank = rankData.findIndex(r => r.id === currentUser.id) + 1;
+            const deptRankData = rankData.filter(r => r.dept === currentUser.dept);
+            const deptRank = deptRankData.findIndex(r => r.id === currentUser.id) + 1;
+
+            document.getElementById('home-total-rank').innerText = totalRank + '위';
+            document.getElementById('home-dept-rank').innerText = deptRank + '위';
+
+            const now = new Date(); now.setHours(0,0,0,0);
+            const evts = storage.get('evts_'+currentUser.id).sort((a,b) => new Date(a.date) - new Date(b.date));
+            document.getElementById('home-upcoming-list').innerHTML = evts.filter(e => new Date(e.date) >= now).slice(0, 5).map(e => {
+                const diff = Math.ceil((new Date(e.date) - now) / 86400000);
+                return `<div style='padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center'>
+                    <span><span class='cat-badge' style='background:${e.color}; color:#fff; font-size:10px; padding:2px 4px; border-radius:3px; margin-right:5px;'>${e.catName || '기타'}</span><b>${e.title}</b></span>
+                    <span style='background:#ff4d4d; color:white; padding:2px 6px; border-radius:4px; font-size:11px'>${diff === 0 ? 'D-Day' : 'D-'+diff}</span></div>`;
+            }).join('') || '<p style=color:#999>일정이 없습니다.</p>';
+
+            const posts = storage.get('knu_posts');
+            document.getElementById('home-community-preview').innerHTML = posts.slice(-5).reverse().map(p => `
+                <div style='font-size:13px; padding:8px 0; border-bottom:1px dashed #eee; display:flex; justify-content:space-between; cursor:pointer' onclick='viewPost(${p.id})'>
+                    <span>[${p.cat}] ${p.title}</span>
+                    <small style='color:#999'>${p.comments.length}</small>
+                </div>`).join('') || '<p style=color:#999>게시글이 없습니다.</p>';
+        }
+
+        function openPostModal() { document.getElementById('post-modal').classList.remove('hidden'); }
+        function closePostModal() { document.getElementById('post-modal').classList.add('hidden'); }
+
+        function savePost() {
+            const cat = document.getElementById('post-cat').value;
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+            const isAnon = document.getElementById('post-anon').checked;
+            if(!title || !content) return alert('제목과 내용을 입력하세요!');
+
+            let posts = storage.get('knu_posts');
+            posts.push({
+                id: Date.now(), cat, title, content,
+                authorName: currentUser.name,
+                authorId: currentUser.id,
+                isAnon: isAnon,
+                time: new Date().toLocaleString(),
+                comments: []
+            });
+            storage.set('knu_posts', posts);
+            closePostModal(); renderCommunity();
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('post-anon').checked = false;
+        }
+
+        function filterCommunity(cat) { currentCommunityCat = cat; renderCommunity(); }
+
+        function renderCommunity() {
+            let posts = storage.get('knu_posts');
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+
+            if(currentCommunityCat !== 'all') posts = posts.filter(p => p.cat === currentCommunityCat);
+            if(keyword) posts = posts.filter(p => p.title.toLowerCase().includes(keyword) || p.content.toLowerCase().includes(keyword));
+
+            document.getElementById('community-post-list').innerHTML = [...posts].reverse().map(p => `
+                <div class='post-item' onclick='viewPost(${p.id})'>
+                    <div style='display:flex; justify-content:space-between'>
+                        <b style='color:var(--primary)'>[${p.cat}] ${p.title}</b>
+                        <small style='color:#999'>${p.time}</small>
+                    </div>
+                    <div style='margin-top:5px; font-size:14px; color:#666'>${p.isAnon ? '익명' : p.authorName} | 댓글 ${p.comments.length}</div>
+                </div>`).join('') || '<p style="text-align:center; padding:40px; color:#999">결과가 없습니다.</p>';
+        }
+
+        function viewPost(id) {
+            const posts = storage.get('knu_posts');
+            const post = posts.find(p => p.id === id);
+            if(!post) return;
+            currentPostId = id;
+            document.getElementById('post-detail-content').innerHTML = `
+                <small style='color:var(--primary); font-weight:bold'>${post.cat}</small>
+                <h2 style='margin:5px 0'>${post.title}</h2>
+                <div style='font-size:13px; color:#888; margin-bottom:15px'>작성자: ${post.isAnon ? '익명' : post.authorName} | ${post.time}</div>
+                <p style='white-space:pre-wrap; line-height:1.6'>${post.content}</p>`;
+            renderComments();
+            document.getElementById('post-view-modal').classList.remove('hidden');
+        }
+
+        function renderComments() {
+            const posts = storage.get('knu_posts');
+            const post = posts.find(p => p.id === currentPostId);
+            if(!post) return;
+
+            let anonMap = {}; let anonCount = 0;
+
+            document.getElementById('comment-list').innerHTML = post.comments.map(c => {
+                let displayAuthor = c.authorName;
+
+                if (c.authorId === post.authorId) {
+                    displayAuthor = "<span style='color:#ff4d4d; font-weight:bold;'>작성자</span>";
+                } else if (c.isAnon) {
+                    if (!anonMap[c.authorId]) {
+                        anonCount++;
+                        anonMap[c.authorId] = "익명 " + anonCount;
+                    }
+                    displayAuthor = anonMap[c.authorId];
+                }
+
+                return `<div class='comment-item'>
+                    <b>${displayAuthor}</b>: ${c.text} <br><small style='color:#999; font-size:10px'>${c.time}</small>
+                </div>`}).join('') || '<p style=color:#999;font-size:12px>댓글이 없습니다.</p>';
+        }
+
+        function saveComment() {
+            const txt = document.getElementById('comment-input').value.trim();
+            const isAnon = document.getElementById('comment-anon').checked;
+            if(!txt) return;
+            let posts = storage.get('knu_posts');
+            const idx = posts.findIndex(p => p.id === currentPostId);
+            posts[idx].comments.push({
+                authorName: currentUser.name,
+                authorId: currentUser.id,
+                isAnon: isAnon,
+                text: txt,
+                time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+            });
+            storage.set('knu_posts', posts);
+            document.getElementById('comment-input').value = '';
+            document.getElementById('comment-anon').checked = false;
+            renderComments();
+        }
+
+        function closePostViewModal() { document.getElementById('post-view-modal').classList.add('hidden'); renderCommunity(); }
+
+        function changeWeek(offset) { currentWeekOffset += offset; renderStudy(); }
+        function changeMonth(offset) { currentMonthDate.setMonth(currentMonthDate.getMonth() + offset); renderStudyCalendar(); }
+
+        function renderStudy() {
+            const logs = storage.get('logs_'+currentUser.id); const ctx = document.getElementById('stats-chart').getContext('2d');
+            const labels = []; const data = [];
+
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek) + (currentWeekOffset * 7);
+
+            for(let i=0; i<7; i++) {
+                const d = new Date(); d.setHours(0,0,0,0);
+                d.setDate(today.getDate() + diffToMonday + i);
+                const ds = getLocalYYYYMMDD(d);
+                labels.push(`${ds.substr(5,5)} (${dayNames[d.getDay()]})`);
+                const log = logs.find(l => l.date === ds);
+                data.push(log ? Math.floor(log.sec/60) : 0);
+            }
+
+            if(statsChart) statsChart.destroy();
+            statsChart = new Chart(ctx, {
+                type: 'bar', plugins: [ChartDataLabels],
+                data: { labels, datasets:[{ data, backgroundColor: '#003a78' }] },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { display: false, beginAtZero: true, suggestedMax: 60, grace: '10%' },
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 } } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end', align: 'top', offset: 0, font: { weight: 'bold', size: 10 },
+                            formatter: (v) => v > 0 ? (v >= 60 ? `${Math.floor(v/60)}h ${v%60}m` : `${v}m`) : ''
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStudyCalendar() {
+            const body = document.getElementById('study-mini-calendar'); body.innerHTML = '';
+            document.getElementById('mini-cal-month-label').innerText = (currentMonthDate.getMonth()+1) + '월';
+            dayNames.forEach(d => body.innerHTML += `<div class='cal-header'>${d}</div>`);
+            const first = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 1).getDay();
+            const last = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0).getDate();
+            const logs = storage.get('logs_' + currentUser.id);
+            for(let i=0; i<first; i++) body.innerHTML += "<div></div>";
+            for(let i=1; i<=last; i++) {
+                const dObj = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), i);
+                const dStr = getLocalYYYYMMDD(dObj);
+                const log = logs.find(l => l.date === dStr);
+                const timeText = log ? (log.sec >= 3600 ? `${Math.floor(log.sec/3600)}h ${Math.floor((log.sec%3600)/60)}m` : `${Math.floor(log.sec/60)}m`) : '';
+                body.innerHTML += `<div class='cal-day'><b>${i}</b><span class='cal-day-name'>${dayNames[dObj.getDay()]}</span><span class='cal-time-badge'>${timeText}</span></div>`;
+            }
+        }
+
+        function renderSchedule() {
+            const body = document.getElementById('calendar-body'); body.innerHTML = '';
+            const cats = storage.get('cats_' + currentUser.id);
+            const targetCats = cats.length ? cats : [{name:'학습', color:'#003a78'}, {name:'과제', color:'#ffb800'}];
+            if(!cats.length) storage.set('cats_'+currentUser.id, targetCats);
+
+            document.getElementById('event-cat').innerHTML = targetCats.map(c => `<option value='${c.name}'>${c.name}</option>`).join('');
+            document.getElementById('cat-list-display').innerHTML = targetCats.map(c => `<span class='cat-item' style='background:${c.color}' ondblclick='delCat("${c.name}")'>${c.name}</span>`).join('');
+
+            dayNames.forEach(d => body.innerHTML += `<div class='cal-header'>${d}</div>`);
+            const now = new Date(); const first = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+            const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const evts = storage.get('evts_' + currentUser.id);
+            for(let i=0; i<first; i++) body.innerHTML += "<div></div>";
+            for(let i=1; i<=last; i++) {
+                const dStr = getLocalYYYYMMDD(new Date(now.getFullYear(), now.getMonth(), i));
+                body.innerHTML += `<div class='cal-day'><b>${i}</b>
+                    ${evts.filter(e => e.date === dStr).map(e => `<span class='schedule-tag' style='background:${e.color}' ondblclick='delEvt(${e.id})'>${e.title}</span>`).join('')}</div>`;
+            }
+        }
+
+        function addCat() {
+            const name = document.getElementById('new-cat-name').value; const color = document.getElementById('new-cat-color').value;
+            if(!name) return alert('카테고리 이름을 입력하세요!');
+            let cats = storage.get('cats_'+currentUser.id); if(cats.find(c => c.name === name)) return alert('이미 존재하는 이름입니다!');
+            cats.push({name, color}); storage.set('cats_'+currentUser.id, cats);
+            document.getElementById('new-cat-name').value = ''; renderSchedule();
+        }
+
+        function delCat(name) {
+            if(['학습','과제'].includes(name)) return alert('기본 카테고리는 삭제할 수 없습니다!');
+            if(confirm(`'${name}' 카테고리를 삭제하시겠습니까?`)) {
+                let cats = storage.get('cats_'+currentUser.id).filter(c => c.name !== name);
+                storage.set('cats_'+currentUser.id, cats);
+                renderSchedule();
+            }
+        }
+
+        function addEvent() {
+            const date = document.getElementById('event-date').value; const title = document.getElementById('event-title').value; const catName = document.getElementById('event-cat').value;
+            if(!date || !title) return alert('날짜와 내용을 입력해주세요!');
+            const cats = storage.get('cats_'+currentUser.id);
+            const color = cats.find(c => c.name === catName)?.color || '#003a78';
+            let e = storage.get('evts_'+currentUser.id); e.push({id: Date.now(), date, title, color, catName});
+            storage.set('evts_'+currentUser.id, e); renderSchedule();
+        }
+
+        function delEvt(id) { if(confirm('이 일정을 삭제하시겠습니까?')) { let e = storage.get('evts_'+currentUser.id).filter(x => x.id !== id); storage.set('evts_'+currentUser.id, e); renderSchedule(); } }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if(timerIdx) { clearInterval(timerIdx); timerIdx = null; btn.innerText = '학습 시작'; } else {
+                timerIdx = setInterval(() => {
+                    const day = getLocalYYYYMMDD();
+                    let logs = storage.get('logs_'+currentUser.id); let log = logs.find(l => l.date === day);
+                    if(log) log.sec += 1; else logs.push({date: day, sec: 1});
+                    storage.set('logs_'+currentUser.id, logs); updateTimerUI(); renderRanking();
+                }, 1000); btn.innerText = '학습 중단';
+            }
+        }
+        function updateTimerUI() {
+            const day = getLocalYYYYMMDD();
+            const log = storage.get('logs_'+currentUser.id).find(l => l.date === day) || {sec:0};
+            const h = Math.floor(log.sec/3600), m = Math.floor((log.sec%3600)/60), s = log.sec%60;
+            document.getElementById('timer-display').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function renderRanking() {
+            const filter = document.getElementById('rank-filter').value;
+            const users = storage.get('knu_users'); const today = getLocalYYYYMMDD();
+            let rankData = users.map(u => ({ ...u, sec: (storage.get('logs_'+u.id).find(l => l.date === today)?.sec || 0) }));
+            rankData = rankData.filter(u => u.sec > 0);
+            if(filter === 'dept') rankData = rankData.filter(u => u.dept === currentUser.dept);
+            rankData.sort((a,b) => b.sec - a.sec);
+
+            document.getElementById('ranking-list').innerHTML = rankData.map((r, i) => {
+                const h = Math.floor(r.sec/3600), m = Math.floor((r.sec%3600)/60), s = r.sec%60;
+                return `<div class='rank-item' style='${r.id === currentUser?.id ? 'background:#f0f4f8' : ''}' onclick='openRankModal("${r.id}")'>
+                <img src='${r.img}' style='width:40px;height:40px;border-radius:50%;margin-right:15px'>
+                <div style='flex:1'><b>${i+1}위 ${r.name}</b><br><small>${r.dept}</small></div>
+                <b style='color:var(--primary)'>${h}h ${m}m ${s}s</b></div>`}).join('');
+        }
+
+        function openRankModal(id) {
+            const user = storage.get('knu_users').find(u => u.id === id);
+            if(!user) return;
+            document.getElementById('rank-p-img').src = user.img;
+            document.getElementById('rank-p-name').innerText = user.name + ' (' + user.id + ')';
+            document.getElementById('rank-p-dept').innerText = user.dept;
+            document.getElementById('rank-p-msg').innerText = user.msg;
+            document.getElementById('rank-modal').classList.remove('hidden');
+        }
+        function closeRankModal() { document.getElementById('rank-modal').classList.add('hidden'); }
+        function openProfileModal() { document.getElementById('edit-dept').value = currentUser.dept; document.getElementById('edit-msg').value = currentUser.msg; document.getElementById('profile-modal').classList.remove('hidden'); }
+        function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+        function saveProfile() {
+            currentUser.dept = document.getElementById('edit-dept').value; currentUser.msg = document.getElementById('edit-msg').value;
+            if(tempImgData) currentUser.img = tempImgData;
+            let users = storage.get('knu_users'); const idx = users.findIndex(u => u.id === currentUser.id); users[idx] = currentUser;
+            storage.set('knu_users', users); updateProfileUI(); closeProfileModal(); alert('정보가 저장되었습니다.');
+        }
+        function previewImage(input) { if(input.files[0]) { const reader = new FileReader(); reader.onload = e => tempImgData = e.target.result; reader.readAsDataURL(input.files[0]); } }
+        function logout() { location.reload(); }
